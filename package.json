@@ -1,0 +1,24 @@
+{
+  "name": "pet-me",
+  "version": "1.0.0",
+  "description": "Pet adoption and services closest to the pet owner.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gayathri-Chennakrishnam-Sharma/Pet-Me.git"
+  },
+  "author": "Gayathri B M",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gayathri-Chennakrishnam-Sharma/Pet-Me/issues"
+  },
+  "homepage": "https://github.com/Gayathri-Chennakrishnam-Sharma/Pet-Me#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.12"
+  }
+}
