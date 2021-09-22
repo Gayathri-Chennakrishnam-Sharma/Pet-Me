@@ -4,6 +4,28 @@ const pets = JSON.parse(
     fs.readFileSync(`${__dirname}/../dev-data/data/pets-simple.json`)
     );
 
+    exports.checkID = (req, res, next , val) => {
+        console.log(`Pet id is : ${val}`);
+        if(req.params.id * 1 > pets.length){
+            return res.status(404).json({
+                status: 'Fail',
+                message: 'Invalid ID'
+            });
+        }
+        next();
+    }
+
+    exports.checkBody = (req, res, next ) => {
+        // console.log(`req.body is : ${val}`);
+        if (!req.body.name || !req.body.age) {
+            return res.status(400).json({
+                status: 'Fail',
+                message: 'Missing name or age'
+            });
+        }
+        next();
+    }
+
  exports.getAllPets = (req, res) => {
     res.status(200).json({
         status: 'Success',
@@ -20,13 +42,6 @@ const pets = JSON.parse(
     const id = req.params.id * 1;
     const pet = pets.find(el => el.id === id);
 
-    if((!pet || id > pets.length)){
-        return res.status(404).json({
-            status: 'Fail',
-            message: 'Invalid ID'
-        })
-
-    }
 
     res.status(200).json({
         status: 'Success',
@@ -44,7 +59,7 @@ exports.createAPet = (req, res) => {
 
     pets.push(newPet);
 
-    fs.writeFile(`${__dirname}/dev-data/data/pets-simple.json`, JSON.stringify(pets), err => {
+    fs.writeFile(`${__dirname}/../dev-data/data/pets-simple.json`, JSON.stringify(pets), err => {
         res.status(201).json({
             status: 'Success',
             data: {
@@ -55,12 +70,7 @@ exports.createAPet = (req, res) => {
 };
 
 exports.updateApet =  (req,res) => {
-    if((req.params.id * 1 > pets.length)){
-        return res.status(404).json({
-            status: 'Fail',
-            message: 'Invalid ID'
-        });
-    }
+
         res.status(200).json({
             status: 'Success',
             data:{
@@ -71,12 +81,6 @@ exports.updateApet =  (req,res) => {
 };
 
 exports.deleteAPet =  (req,res) => {
-    if((req.params.id * 1 > pets.length)){
-        return res.status(404).json({
-            status: 'Fail',
-            message: 'Invalid ID'
-        });
-    }
         res.status(204).json({
             status: 'Success',
             data: null
