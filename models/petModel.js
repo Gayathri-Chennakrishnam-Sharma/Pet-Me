@@ -4,7 +4,7 @@ const fosterContact = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'A Foster person name must be defined!'],
-    unique: true,
+    unique: false,
     trim: true,
   },
   contactNumber: {
@@ -51,10 +51,11 @@ const petSchema = new mongoose.Schema({
     required: [true, 'A pet must have a image cover!'],
   },
   images: [String],
-  fosterContact: fosterContact,
+  fosterContact: [fosterContact],
   createdAt: {
     type: Date,
     default: Date.now(),
+    select: false,
   },
 });
 

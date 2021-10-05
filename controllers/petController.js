@@ -1,5 +1,6 @@
 /* eslint-disable node/no-unsupported-features/es-syntax */
 const Pet = require('../models/petModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 // const pets = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/pets-simple.json`)
@@ -17,9 +18,31 @@ const Pet = require('../models/petModel');
 //   next();
 // };
 
+exports.currentlyAdoptablePups = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = 'age,availabilityStatus';
+  next();
+};
+
 exports.getAllPets = async (req, res) => {
   try {
-    const pets = await Pet.find();
+    // console.log(req.query);
+    //executing the query
+    const features = new APIFeatures(Pet.find(), req.query)
+      .filter()
+      .sort()
+      .limitFileds()
+      .paginate();
+    const pets = await features.query;
+
+    //one way of querying using mongoose methods
+    // const query = Pet.find()
+    //   .where('age')
+    //   .equals(2)
+    //   .where('breed')
+    //   .equals('Indie Kombai');
+
+    //sending response
     res.status(200).json({
       status: 'Success',
       results: pets.length,

@@ -5,6 +5,10 @@ const router = express.Router();
 
 // router.param('id', petController.checkID);
 
+router
+  .route('/youngest-adoptable-pups')
+  .get(petController.currentlyAdoptablePups, petController.getAllPets);
+
 router.route('/').get(petController.getAllPets).post(petController.createAPet);
 
 router
