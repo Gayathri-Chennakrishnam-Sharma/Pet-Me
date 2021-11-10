@@ -9,6 +9,8 @@ router
   .route('/youngest-adoptable-pups')
   .get(petController.currentlyAdoptablePups, petController.getAllPets);
 
+router.route('/pet-stats').get(petController.getPetStats);
+
 router.route('/').get(petController.getAllPets).post(petController.createAPet);
 
 router

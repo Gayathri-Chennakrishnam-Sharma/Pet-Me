@@ -133,3 +133,36 @@ exports.deleteAPet = async (req, res) => {
     });
   }
 };
+
+exports.getPetStats = async (req, res) => {
+  try {
+    const stats = await Pet.aggregate([
+      {
+        $match: { age: { $gte: 1 } },
+      },
+      {
+        $group: {
+          _id: { $toUpper: '$breed' },
+          numPets: { $sum: 1 },
+          avgAge: { $avg: '$age' },
+          minAge: { $min: '$age' },
+          maxAge: { $max: '$age' },
+        },
+      },
+      // {
+      //   $sort: { avgAge: 1 },
+      // },
+    ]);
+    res.status(200).json({
+      status: 'Success',
+      data: {
+        stats,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'Fail',
+      message: err,
+    });
+  }
+};
