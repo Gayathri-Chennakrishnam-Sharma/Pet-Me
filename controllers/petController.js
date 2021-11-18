@@ -1,6 +1,8 @@
 /* eslint-disable node/no-unsupported-features/es-syntax */
 const Pet = require('../models/petModel');
 const APIFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 // const pets = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/pets-simple.json`)
@@ -24,145 +26,112 @@ exports.currentlyAdoptablePups = (req, res, next) => {
   next();
 };
 
-exports.getAllPets = async (req, res) => {
-  try {
-    // console.log(req.query);
-    //executing the query
-    const features = new APIFeatures(Pet.find(), req.query)
-      .filter()
-      .sort()
-      .limitFileds()
-      .paginate();
-    const pets = await features.query;
+exports.getAllPets = catchAsync(async (req, res, next) => {
+  // console.log(req.query);
+  //executing the query
+  const features = new APIFeatures(Pet.find(), req.query)
+    .filter()
+    .sort()
+    .limitFileds()
+    .paginate();
+  const pets = await features.query;
 
-    //one way of querying using mongoose methods
-    // const query = Pet.find()
-    //   .where('age')
-    //   .equals(2)
-    //   .where('breed')
-    //   .equals('Indie Kombai');
+  //one way of querying using mongoose methods
+  // const query = Pet.find()
+  //   .where('age')
+  //   .equals(2)
+  //   .where('breed')
+  //   .equals('Indie Kombai');
 
-    //sending response
-    res.status(200).json({
-      status: 'Success',
-      results: pets.length,
-      data: {
-        pets,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'Fail',
-      message: err,
-    });
-  }
-};
-
-exports.getAPet = async (req, res) => {
-  try {
-    const pet = await Pet.findById(req.params.id);
-    res.status(200).json({
-      status: 'Success',
-      data: {
-        pet,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'Fail',
-      message: err,
-    });
-  }
+  //sending response
   res.status(200).json({
     status: 'Success',
-    // data: {
-    //   pet,
-    // },
+    results: pets.length,
+    data: {
+      pets,
+    },
   });
-};
+});
 
-exports.createAPet = async (req, res) => {
-  try {
-    const newPet = await Pet.create(req.body);
+exports.getAPet = catchAsync(async (req, res, next) => {
+  const pet = await Pet.findById(req.params.id);
 
-    res.status(201).json({
-      status: 'Success',
-      data: {
-        pet: newPet,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'Fail',
-      message: err,
-    });
+  if (!pet) {
+    return next(new AppError('No Pet found with that ID!', 404));
   }
-};
 
-exports.updateAPet = async (req, res) => {
-  try {
-    const pet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    res.status(200).json({
-      status: 'Success',
-      data: {
-        pet,
-      },
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: 'Fail',
-      message: err,
-    });
-  }
-};
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      pet,
+    },
+  });
+});
 
-exports.deleteAPet = async (req, res) => {
-  try {
-    await Pet.findByIdAndDelete(req.params.id);
-    res.status(204).json({
-      status: 'Success',
-      data: null,
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: 'Fail',
-      message: err,
-    });
-  }
-};
+exports.createAPet = catchAsync(async (req, res, next) => {
+  const newPet = await Pet.create(req.body);
 
-exports.getPetStats = async (req, res) => {
-  try {
-    const stats = await Pet.aggregate([
-      {
-        $match: { age: { $gte: 1 } },
-      },
-      {
-        $group: {
-          _id: { $toUpper: '$breed' },
-          numPets: { $sum: 1 },
-          avgAge: { $avg: '$age' },
-          minAge: { $min: '$age' },
-          maxAge: { $max: '$age' },
-        },
-      },
-      // {
-      //   $sort: { avgAge: 1 },
-      // },
-    ]);
-    res.status(200).json({
-      status: 'Success',
-      data: {
-        stats,
-      },
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: 'Fail',
-      message: err,
-    });
+  res.status(201).json({
+    status: 'Success',
+    data: {
+      pet: newPet,
+    },
+  });
+});
+
+exports.updateAPet = catchAsync(async (req, res, next) => {
+  const pet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!pet) {
+    return next(new AppError('No Pet found with that ID!', 404));
   }
-};
+
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      pet,
+    },
+  });
+});
+
+exports.deleteAPet = catchAsync(async (req, res, next) => {
+  const pet = await Pet.findByIdAndDelete(req.params.id);
+
+  if (!pet) {
+    return next(new AppError('No Pet found with that ID!', 404));
+  }
+
+  res.status(204).json({
+    status: 'Success',
+    data: null,
+  });
+});
+
+exports.getPetStats = catchAsync(async (req, res, next) => {
+  const stats = await Pet.aggregate([
+    {
+      $match: { age: { $gte: 1 } },
+    },
+    {
+      $group: {
+        _id: { $toUpper: '$breed' },
+        numPets: { $sum: 1 },
+        avgAge: { $avg: '$age' },
+        minAge: { $min: '$age' },
+        maxAge: { $max: '$age' },
+      },
+    },
+    // {
+    //   $sort: { avgAge: 1 },
+    // },
+  ]);
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      stats,
+    },
+  });
+});
